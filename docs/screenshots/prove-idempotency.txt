@@ -1,0 +1,6 @@
+Idempotency-Key: a1b23007-100c-430e-8664-335fe12dd7b7
+Sending 2 identical POST /api/orders requests in parallel…
+  request 1: HTTP 201  order #50002  id 6ad4d596df01f1149d131b63  replayed=false
+  request 2: HTTP 200  order #50002  id 6ad4d596df01f1149d131b63  replayed=true
+Orders in the database with this key: 1
+PASS: exactly one order was created.

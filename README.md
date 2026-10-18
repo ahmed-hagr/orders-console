@@ -32,6 +32,7 @@ The API refuses to start without one.
 
 ```bash
 npm test                    # API tests against a real, temporary mongod (downloaded on first run)
+npm run check               # typecheck + lint + format check + tests, all workspaces
 npm run prove:idempotency   # R2 proof against your seeded database
 ```
 
@@ -96,10 +97,11 @@ It does not protect against XSS _using_ the session while the page is open, sinc
 
 ## Product question: "Delete all cancelled orders"
 
-> TODO: write this in your own words (five lines max). Points from our discussion:
-> ask _why_ first (slow list? clutter? storage?); ask who relies on cancelled orders (finance refunds,
-> chargebacks, audit, legal retention); if she can't answer, propose hiding cancelled orders by default
-> (the status filter already exists) or an admin-only, logged archive instead of a hard delete.
+First I'd ask what problem the cancelled orders cause today: a cluttered list, slow screens, or storage cost?
+Then I'd ask who else relies on them: finance for refunds and chargebacks, support for disputes, reporting for cancellation rates, and tax record retention.
+I'd also ask whether a cancelled order is ever reopened, and who should be allowed to press the button.
+If she can't answer, I'd propose hiding cancelled orders by default instead; the status filter already exists, so they stay one click away.
+If storage turns out to be the real reason, I'd propose an admin-only, logged, reversible archive. I wouldn't build a hard delete.
 
 ## What I skipped and why
 
@@ -110,4 +112,14 @@ It does not protect against XSS _using_ the session while the page is open, sinc
 - **Front-end tests.** The API carries the correctness tests (R2 proof, auth, pagination). The rapid-filter behaviour is checked by hand, as the brief describes.
 - **CSRF token.** Relying on SameSite=Strict + same-origin + JSON-only bodies. A cross-origin deployment would need a token.
 - **Bundle size.** The production bundle is about 420 kB gzipped, mostly antd. Route-level code splitting would fix it but adds nothing to this review.
-- **Screen recording.** TODO: add three screenshots or a two-minute recording (rapid-filter test + `npm run prove:idempotency`).
+- **Gap-free order numbers.** When two copies of the same request arrive together, both reserve an order number before the unique index picks a winner, so the loser's number is never used (for example #50003). The numbers stay unique and increasing; only the gaps are visible.
+- **Screen recording.** Screenshots are below instead.
+
+## Screenshots
+
+|                                                                                                                                                                                                                                                                            |                                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R1, rapid filter test, in flight.** Pending, then Shipped, then Cancelled, clicked 120 ms apart with a slow network. The Cancelled filter is already selected while the previous rows stay dimmed under "Updating…". ![](docs/screenshots/02-rapid-filter-in-flight.png) | **R1, settled.** Only Cancelled orders are shown; the slower earlier requests never overwrote it. ![](docs/screenshots/03-rapid-filter-settled.png)                 |
+| **R2, the create form.** Validated with the shared schemas. The Idempotency-Key at the bottom stays the same across retries. ![](docs/screenshots/04-create-order-drawer.png)                                                                                              | **R2, the duplicate proof.** Two identical requests in parallel: one 201, one replayed 200, one order in the database. ![](docs/screenshots/06-duplicate-proof.png) |
+
+More: [orders list](docs/screenshots/01-orders-list.png), [order created](docs/screenshots/05-order-created.png), [proof output as text](docs/screenshots/prove-idempotency.txt).
