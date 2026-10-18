@@ -1,0 +1,20 @@
+{
+  "name": "orders-console",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm -w @oc/api run dev\" \"npm -w @oc/web run dev\"",
+    "seed": "npm -w @oc/api run seed",
+    "prove:idempotency": "npm -w @oc/api run prove:idempotency",
+    "test": "npm -w @oc/api test",
+    "typecheck": "npm -ws --if-present run typecheck",
+    "build": "npm -w @oc/web run build",
+    "db:up": "docker compose up -d mongo"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "~5.9.3"
+  }
+}
