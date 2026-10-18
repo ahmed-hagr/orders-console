@@ -10,13 +10,3 @@ const dateFmt = new Intl.DateTimeFormat("en-GB", {
 });
 
 export const formatDate = (iso: string) => dateFmt.format(new Date(iso));
-
-/** Resolves after ms, or rejects with AbortError as soon as the signal aborts. */
-export const sleep = (ms: number, signal?: AbortSignal) =>
-  new Promise<void>((resolve, reject) => {
-    const t = setTimeout(resolve, ms);
-    signal?.addEventListener("abort", () => {
-      clearTimeout(t);
-      reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
-    });
-  });

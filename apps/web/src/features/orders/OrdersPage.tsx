@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { App, Button, Card, Switch, Tag, Typography } from "antd";
+import { App, Button, Card, Tag, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { StatsBar } from "../stats/StatsBar.tsx";
 import { CreateOrderDrawer } from "./CreateOrderDrawer.tsx";
@@ -12,10 +12,9 @@ import { useOrdersQuery } from "./useOrdersQuery.ts";
 export function OrdersPage() {
   const { message } = App.useApp();
   const { filters, setFilters } = useOrderFilters();
-  const [slowNetwork, setSlowNetwork] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const query = useOrdersQuery(filters, slowNetwork);
+  const query = useOrdersQuery(filters);
   const create = useCreateOrder();
   const remove = useDeleteOrder();
 
@@ -40,12 +39,6 @@ export function OrdersPage() {
             </div>
           </div>
           <div className="flex-1" />
-          {import.meta.env.DEV && (
-            <label className="flex items-center gap-2 text-sm text-slate-600">
-              <Switch size="small" checked={slowNetwork} onChange={setSlowNetwork} />
-              Simulate slow network
-            </label>
-          )}
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setDrawerOpen(true)}>
             New phone order
           </Button>
