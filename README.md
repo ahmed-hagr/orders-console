@@ -34,6 +34,7 @@ The API refuses to start without one.
 npm test                    # API tests against a real, temporary mongod (downloaded on first run)
 npm run check               # typecheck + lint + format check + tests, all workspaces
 npm run prove:idempotency   # R2 proof against your seeded database
+npm run test:e2e            # R1 browser test (Playwright, uses your installed Chrome)
 ```
 
 `prove:idempotency` logs in as the agent, sends the same `POST /api/orders` twice in parallel with one `Idempotency-Key`, and prints:
@@ -47,11 +48,26 @@ PASS: exactly one order was created.
 
 Set `PARALLEL=10` to fire ten at once.
 
-### Trying R1 by hand
+### The R1 browser test
 
-Turn on **Simulate slow network** (dev builds only) above the table. Each list request then waits a random 0.3–2 s before it is sent.
-Click three status filters quickly: the table always ends on the last one you clicked.
-To see the stats error state, set `STATS_FAIL_RATE=1` in `apps/api/.env` and restart the API.
+Locally every request is fast and they come back in order, so clicking quickly by hand can't produce "an earlier, slower request".
+[`e2e/rapid-filter.spec.ts`](apps/web/e2e/rapid-filter.spec.ts) creates that race on purpose with Playwright:
+
+1. It holds the Pending response for 2 s and the Shipped response for 1 s, and lets Cancelled through at once.
+2. It clicks Pending, Shipped, Cancelled 100 ms apart.
+3. The responses arrive in the order Cancelled, Shipped, Pending, the stale ones last.
+4. It checks that the table still shows only Cancelled orders, with the Cancelled filter selected and in the URL.
+
+```
+clicked Pending -> Shipped -> Cancelled; responses delivered: cancelled -> shipped -> pending
+✓ R1: an earlier, slower response never overwrites the latest filter
+```
+
+I also checked that the test can fail: against a naive `useEffect` fetch with no abort and no "latest wins" guard, it fails because stale Pending rows appear under the Cancelled filter.
+`npm run test:e2e` needs MongoDB running and seeded. It starts the API and web app if they aren't already running.
+It uses your installed Google Chrome; to use Playwright's own browser instead, run `npx playwright install chromium` and set `PW_CHANNEL=chromium`.
+
+To see the stats error state by hand, set `STATS_FAIL_RATE=1` in `apps/api/.env` and restart the API.
 
 ## How the two hard problems are solved
 
@@ -109,7 +125,7 @@ If storage turns out to be the real reason, I'd propose an admin-only, logged, r
 - **Total match count.** `countDocuments` on every filter change is the slowest part of a list at scale, so the UI shows "N loaded, scroll for more" instead.
 - **Substring search.** Search is prefix-only so it stays on an index. Substring search would need a text or Atlas Search index (see SCALE.md).
 - **Idempotency key expiry.** Keys stay on the order forever. That's cheap at this size, but it means a key can never be reused.
-- **Front-end tests.** The API carries the correctness tests (R2 proof, auth, pagination). The rapid-filter behaviour is checked by hand, as the brief describes.
+- **More front-end tests.** The browser suite covers the R1 race only. The create form, delete and stats states are covered by API tests and checked by hand.
 - **CSRF token.** Relying on SameSite=Strict + same-origin + JSON-only bodies. A cross-origin deployment would need a token.
 - **Bundle size.** The production bundle is about 420 kB gzipped, mostly antd. Route-level code splitting would fix it but adds nothing to this review.
 - **Gap-free order numbers.** When two copies of the same request arrive together, both reserve an order number before the unique index picks a winner, so the loser's number is never used (for example #50003). The numbers stay unique and increasing; only the gaps are visible.
@@ -117,9 +133,9 @@ If storage turns out to be the real reason, I'd propose an admin-only, logged, r
 
 ## Screenshots
 
-|                                                                                                                                                                                                                                                                            |                                                                                                                                                                     |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R1, rapid filter test, in flight.** Pending, then Shipped, then Cancelled, clicked 120 ms apart with a slow network. The Cancelled filter is already selected while the previous rows stay dimmed under "Updating…". ![](docs/screenshots/02-rapid-filter-in-flight.png) | **R1, settled.** Only Cancelled orders are shown; the slower earlier requests never overwrote it. ![](docs/screenshots/03-rapid-filter-settled.png)                 |
-| **R2, the create form.** Validated with the shared schemas. The Idempotency-Key at the bottom stays the same across retries. ![](docs/screenshots/04-create-order-drawer.png)                                                                                              | **R2, the duplicate proof.** Two identical requests in parallel: one 201, one replayed 200, one order in the database. ![](docs/screenshots/06-duplicate-proof.png) |
+|                                                                                                                                                                                         |                                                                                                                                                                     |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R1, the browser test.** Pending, Shipped and Cancelled responses are delivered stale-last, and the table still shows the latest filter. ![](docs/screenshots/02-rapid-filter-e2e.png) | **R1, the result.** After three quick clicks, only Cancelled orders are shown. ![](docs/screenshots/03-rapid-filter-result.png)                                     |
+| **R2, the create form.** Validated with the shared schemas. The Idempotency-Key at the bottom stays the same across retries. ![](docs/screenshots/04-create-order-drawer.png)           | **R2, the duplicate proof.** Two identical requests in parallel: one 201, one replayed 200, one order in the database. ![](docs/screenshots/06-duplicate-proof.png) |
 
-More: [orders list](docs/screenshots/01-orders-list.png), [order created](docs/screenshots/05-order-created.png), [proof output as text](docs/screenshots/prove-idempotency.txt).
+More: [orders list](docs/screenshots/01-orders-list.png), [order created](docs/screenshots/05-order-created.png), [proof output as text](docs/screenshots/prove-idempotency.txt), [e2e output as text](docs/screenshots/rapid-filter-e2e.txt).

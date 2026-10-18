@@ -1,0 +1,4 @@
+Running 1 test using 1 worker
+clicked Pending -> Shipped -> Cancelled; responses delivered: cancelled -> shipped -> pending
+  ✓  1 e2e/rapid-filter.spec.ts:18:1 › R1: an earlier, slower response never overwrites the latest filter (3.4s)
+  1 passed (4.2s)
