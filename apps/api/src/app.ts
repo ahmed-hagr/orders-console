@@ -2,6 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./modules/auth/auth.routes.ts";
+import { ordersRouter } from "./modules/orders/orders.routes.ts";
 import { errorHandler, notFound } from "./middleware/errorHandler.ts";
 
 /** Builds the app without listening, so tests and scripts use the real middleware chain. */
@@ -15,6 +16,7 @@ export function createApp() {
 
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
   app.use("/api/auth", authRouter());
+  app.use("/api/orders", ordersRouter());
 
   app.use("/api", notFound);
   app.use(errorHandler);

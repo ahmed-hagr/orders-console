@@ -1,7 +1,7 @@
 import { env } from "./config/env.ts";
 import { connectMongo, disconnectMongo } from "./db/mongo.ts";
 import { createApp } from "./app.ts";
-import "./modules/auth/user.model.ts";
+
 
 await connectMongo(env.MONGO_URI);
 const server = createApp().listen(env.PORT, () => {
