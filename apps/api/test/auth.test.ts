@@ -49,8 +49,14 @@ describe("auth fixes from the code review", () => {
   });
 
   it("gives the same answer for a wrong password and an unknown email", async () => {
-    const a = await request(ctx.app).post("/api/auth/login").send({ email: ADMIN.email, password: "wrong" }).expect(401);
-    const b = await request(ctx.app).post("/api/auth/login").send({ email: "nobody@sarh.test", password: "wrong" }).expect(401);
+    const a = await request(ctx.app)
+      .post("/api/auth/login")
+      .send({ email: ADMIN.email, password: "wrong" })
+      .expect(401);
+    const b = await request(ctx.app)
+      .post("/api/auth/login")
+      .send({ email: "nobody@sarh.test", password: "wrong" })
+      .expect(401);
     expect(a.body).toEqual(b.body);
   });
 
@@ -64,8 +70,12 @@ describe("auth fixes from the code review", () => {
 
   it("returns 403 when an agent deletes, and lets an admin soft-delete once", async () => {
     const order = await Order.create({
-      orderNumber: 1, customerName: "Test", nameTokens: ["test"], email: "t@example.com",
-      items: [{ name: "x", quantity: 1, unitPriceMinor: 100 }], totalMinor: 100,
+      orderNumber: 1,
+      customerName: "Test",
+      nameTokens: ["test"],
+      email: "t@example.com",
+      items: [{ name: "x", quantity: 1, unitPriceMinor: 100 }],
+      totalMinor: 100,
     });
     const agent = await loginAs(ctx.app, AGENT);
     const admin = await loginAs(ctx.app, ADMIN);

@@ -62,7 +62,8 @@ describe("GET /api/orders keyset pagination", () => {
 
       const key = (r: OrderDTO) => (sort.startsWith("date") ? Date.parse(r.createdAt) : r.totalMinor);
       const dir = sort.endsWith("asc") ? 1 : -1;
-      for (let i = 1; i < rows.length; i++) expect(Math.sign(key(rows[i]!) - key(rows[i - 1]!)) * dir).toBeGreaterThanOrEqual(0);
+      for (let i = 1; i < rows.length; i++)
+        expect(Math.sign(key(rows[i]!) - key(rows[i - 1]!)) * dir).toBeGreaterThanOrEqual(0);
     },
   );
 
@@ -82,7 +83,11 @@ describe("GET /api/orders keyset pagination", () => {
   });
 
   it("treats regex characters in the search as plain text", async () => {
-    await agent.get("/api/orders").query({ q: ".*" }).expect(200).then((r) => expect(r.body.items).toHaveLength(0));
+    await agent
+      .get("/api/orders")
+      .query({ q: ".*" })
+      .expect(200)
+      .then((r) => expect(r.body.items).toHaveLength(0));
   });
 
   it("rejects a tampered cursor or one from another sort", async () => {

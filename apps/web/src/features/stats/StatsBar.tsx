@@ -14,7 +14,9 @@ export function StatsBar() {
   if (stats.isPending) {
     return (
       <section aria-label="Order stats" aria-busy="true" className="flex flex-col gap-2">
-        <div className="text-sm text-slate-500">Loading stats. This takes a few seconds; the list below works meanwhile.</div>
+        <div className="text-sm text-slate-500">
+          Loading stats. This takes a few seconds; the list below works meanwhile.
+        </div>
         <div className={GRID}>
           {Array.from({ length: 6 }, (_, i) => (
             <Card key={i} size="small">
@@ -32,7 +34,9 @@ export function StatsBar() {
         type="error"
         showIcon
         message={retried ? "Stats are still unavailable" : "Stats did not load"}
-        description={retried ? "The retry failed too. The order list is not affected; reload the page later." : stats.error.message}
+        description={
+          retried ? "The retry failed too. The order list is not affected; reload the page later." : stats.error.message
+        }
         action={
           !retried && (
             <Button

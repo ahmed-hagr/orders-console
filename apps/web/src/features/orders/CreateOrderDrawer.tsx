@@ -43,7 +43,11 @@ export function CreateOrderDrawer({ open, onClose, create }: Props) {
         submitting.current = false;
       },
       onSuccess: ({ order, replayed }) => {
-        void message.success(replayed ? `Order #${order.orderNumber} was already created. No duplicate made.` : `Order #${order.orderNumber} created`);
+        void message.success(
+          replayed
+            ? `Order #${order.orderNumber} was already created. No duplicate made.`
+            : `Order #${order.orderNumber} created`,
+        );
         form.resetFields();
         onClose();
       },
@@ -89,9 +93,7 @@ export function CreateOrderDrawer({ open, onClose, create }: Props) {
           showIcon
           message={keyReused ? "This order was already submitted with different details" : error.message}
           description={
-            keyReused
-              ? "An earlier attempt reached the server. Check the list before creating it again."
-              : undefined
+            keyReused ? "An earlier attempt reached the server. Check the list before creating it again." : undefined
           }
           action={
             keyReused ? (
@@ -141,10 +143,23 @@ export function CreateOrderDrawer({ open, onClose, create }: Props) {
                     <Input placeholder="Item name" aria-label={`Item ${name + 1} name`} />
                   </Form.Item>
                   <Form.Item name={[name, "quantity"]} rules={[zodRule(LineItemInput.shape.quantity)]}>
-                    <InputNumber min={1} max={99} precision={0} placeholder="Qty" className="!w-full" aria-label={`Item ${name + 1} quantity`} />
+                    <InputNumber
+                      min={1}
+                      max={99}
+                      precision={0}
+                      placeholder="Qty"
+                      className="!w-full"
+                      aria-label={`Item ${name + 1} quantity`}
+                    />
                   </Form.Item>
                   <Form.Item name={[name, "unitPrice"]} rules={[zodRule(LineItemInput.shape.unitPrice)]}>
-                    <InputNumber min={0.01} precision={2} placeholder="Unit SAR" className="!w-full" aria-label={`Item ${name + 1} unit price`} />
+                    <InputNumber
+                      min={0.01}
+                      precision={2}
+                      placeholder="Unit SAR"
+                      className="!w-full"
+                      aria-label={`Item ${name + 1} unit price`}
+                    />
                   </Form.Item>
                   <Button
                     type="text"
@@ -156,7 +171,12 @@ export function CreateOrderDrawer({ open, onClose, create }: Props) {
                 </div>
               ))}
               <Form.ErrorList errors={errors} />
-              <Button type="dashed" icon={<PlusOutlined />} disabled={fields.length >= MAX_ITEMS} onClick={() => add({ quantity: 1 })}>
+              <Button
+                type="dashed"
+                icon={<PlusOutlined />}
+                disabled={fields.length >= MAX_ITEMS}
+                onClick={() => add({ quantity: 1 })}
+              >
                 Add item ({fields.length} of {MAX_ITEMS})
               </Button>
             </div>

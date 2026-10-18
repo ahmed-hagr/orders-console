@@ -34,7 +34,9 @@ export function OrdersPage() {
             </Typography.Title>
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <span>Newest data from the server, 50 rows per page</span>
-              {(switchingFilters || (query.isFetching && !query.isFetchingNextPage)) && <Tag color="processing">Updating…</Tag>}
+              {(switchingFilters || (query.isFetching && !query.isFetchingNextPage)) && (
+                <Tag color="processing">Updating…</Tag>
+              )}
             </div>
           </div>
           <div className="flex-1" />

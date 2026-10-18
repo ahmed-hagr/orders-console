@@ -23,10 +23,10 @@ npm run dev                        # API on :4000, web on http://localhost:5173
 Generate a secret with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 The API refuses to start without one.
 
-| Account           | Password     | Role                           |
-| ----------------- | ------------ | ------------------------------ |
-| `admin@sarh.test` | `Admin#2026` | admin (can delete orders)      |
-| `agent@sarh.test` | `Agent#2026` | agent                          |
+| Account           | Password     | Role                      |
+| ----------------- | ------------ | ------------------------- |
+| `admin@sarh.test` | `Admin#2026` | admin (can delete orders) |
+| `agent@sarh.test` | `Agent#2026` | agent                     |
 
 ### Tests and the duplicate proof
 
@@ -55,6 +55,7 @@ To see the stats error state, set `STATS_FAIL_RATE=1` in `apps/api/.env` and res
 ## How the two hard problems are solved
 
 **R1, a fast list that never shows stale results.**
+
 - Keyset pagination on `(sort field, _id)`: no `skip`, and no `countDocuments` per request. Pages are fetched as `limit + 1` to know whether another page exists.
 - One compound index per filter/sort shape, declared in [`order.model.ts`](apps/api/src/modules/orders/order.model.ts):
   `{createdAt,_id}`, `{totalMinor,_id}`, `{status,createdAt,_id}`, `{status,totalMinor,_id}`.
@@ -63,6 +64,7 @@ To see the stats error state, set `STATS_FAIL_RATE=1` in `apps/api/.env` and res
 - Stale responses: each filter combination is its own TanStack Query cache entry. A response can only land in the entry it was requested for, and the table always shows the entry for the current filters. The old request is also aborted, but that only saves work; correctness comes from the key. See [`useOrdersQuery.ts`](apps/web/src/features/orders/useOrdersQuery.ts).
 
 **R2, no duplicate orders.**
+
 - The client creates a UUID `Idempotency-Key` per order being entered. Retries and resubmits reuse it; a new one is issued only after success.
 - The server inserts the order with `{createdBy, idempotencyKey}` under a **unique partial index**. A second insert fails with E11000, and the server answers with the first order (200, `Idempotent-Replayed: true`).
 - The same key with a different body gets 422.
@@ -71,31 +73,31 @@ To see the stats error state, set `STATS_FAIL_RATE=1` in `apps/api/.env` and res
 
 ## Code review: the contractor's `auth.ts`
 
-| # | Problem | Kind | What I changed |
-| - | ------- | ---- | -------------- |
-| 1 | `jwt.decode()` never checks the signature. Anyone can craft `{"role":"admin"}` (or `alg: none`) and become admin. | Security, critical | `jwt.verify()` with `algorithms: ["HS256"]` pinned. Test: forged and `alg: none` tokens get 401. |
-| 2 | `exp` is never checked, and `jwt.sign` sets no expiry, so tokens live forever. | Security | `expiresIn: JWT_TTL` (default 8h); `verify` enforces it. Test: expired token gets 401. |
-| 3 | Secret hard-coded in source (`"sarh-secret-2026"`), so anyone with repo access can mint tokens. | Security | Read from env and validated with Zod at startup; the process exits if it is missing or under 32 chars. Test: a token signed with the old secret gets 401. |
-| 4 | Token accepted from `?token=`, so it leaks into server logs, browser history and the Referer header. | Security | Token only from an httpOnly cookie. Test: `?token=` is ignored. |
-| 5 | Delete route has no server-side authorization ("admin check is done in the React AdminOnly component"). Any agent can call the API directly. | Security | `requireRole("admin")` middleware returns 403. `AdminOnly` now only hides the button. |
-| 6 | Login compares plain-text passwords in the query, so passwords are stored in plain text. | Security | bcrypt hashes (`select: false`). Login finds by email, then `bcrypt.compare`. |
-| 7 | NoSQL injection: `req.body.password` goes into the Mongo query unvalidated, so `{"password": {"$ne": null}}` logs in as anyone. (The original uses Prisma-style syntax, but against Mongo this is the real risk.) | Security | Body parsed with a Zod schema (strings only) before any query; the password never enters a query. Test: gets 400. |
-| 8 | No rate limit on login, so password guessing is free. | Security | `express-rate-limit`: 10 attempts per 15 min per IP. |
-| 9 | Role and user are trusted from the token, so a demoted or deleted user keeps access until the token expires (never, here). | Design / security | `requireAuth` loads the user's current role from the DB on every request. |
-| 10 | Async handlers with no error handling. Under Express 4 a DB error is an unhandled rejection and the request hangs. | Design | Express 5 forwards async errors to one error handler that maps Zod/HTTP/cast errors and never leaks stack traces. |
-| 11 | `:id` isn't validated, `delete` returns `{ok:true}` even when nothing matched, and the hard delete leaves no trace. | Design | Invalid id gets 400, missing gets 404. Soft delete with `deletedAt` / `deletedBy`. |
-| 12 | `req.user = payload` with no typing; `requireAuth` is not reusable for roles. | Design | Typed `req.user`; separate `requireAuth` and `requireRole`. |
+| #   | Problem                                                                                                                                                                                                           | Kind               | What I changed                                                                                                                                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `jwt.decode()` never checks the signature. Anyone can craft `{"role":"admin"}` (or `alg: none`) and become admin.                                                                                                 | Security, critical | `jwt.verify()` with `algorithms: ["HS256"]` pinned. Test: forged and `alg: none` tokens get 401.                                                          |
+| 2   | `exp` is never checked, and `jwt.sign` sets no expiry, so tokens live forever.                                                                                                                                    | Security           | `expiresIn: JWT_TTL` (default 8h); `verify` enforces it. Test: expired token gets 401.                                                                    |
+| 3   | Secret hard-coded in source (`"sarh-secret-2026"`), so anyone with repo access can mint tokens.                                                                                                                   | Security           | Read from env and validated with Zod at startup; the process exits if it is missing or under 32 chars. Test: a token signed with the old secret gets 401. |
+| 4   | Token accepted from `?token=`, so it leaks into server logs, browser history and the Referer header.                                                                                                              | Security           | Token only from an httpOnly cookie. Test: `?token=` is ignored.                                                                                           |
+| 5   | Delete route has no server-side authorization ("admin check is done in the React AdminOnly component"). Any agent can call the API directly.                                                                      | Security           | `requireRole("admin")` middleware returns 403. `AdminOnly` now only hides the button.                                                                     |
+| 6   | Login compares plain-text passwords in the query, so passwords are stored in plain text.                                                                                                                          | Security           | bcrypt hashes (`select: false`). Login finds by email, then `bcrypt.compare`.                                                                             |
+| 7   | NoSQL injection: `req.body.password` goes into the Mongo query unvalidated, so `{"password": {"$ne": null}}` logs in as anyone. (The original uses Prisma-style syntax, but against Mongo this is the real risk.) | Security           | Body parsed with a Zod schema (strings only) before any query; the password never enters a query. Test: gets 400.                                         |
+| 8   | No rate limit on login, so password guessing is free.                                                                                                                                                             | Security           | `express-rate-limit`: 10 attempts per 15 min per IP.                                                                                                      |
+| 9   | Role and user are trusted from the token, so a demoted or deleted user keeps access until the token expires (never, here).                                                                                        | Design / security  | `requireAuth` loads the user's current role from the DB on every request.                                                                                 |
+| 10  | Async handlers with no error handling. Under Express 4 a DB error is an unhandled rejection and the request hangs.                                                                                                | Design             | Express 5 forwards async errors to one error handler that maps Zod/HTTP/cast errors and never leaks stack traces.                                         |
+| 11  | `:id` isn't validated, `delete` returns `{ok:true}` even when nothing matched, and the hard delete leaves no trace.                                                                                               | Design             | Invalid id gets 400, missing gets 404. Soft delete with `deletedAt` / `deletedBy`.                                                                        |
+| 12  | `req.user = payload` with no typing; `requireAuth` is not reusable for roles.                                                                                                                                     | Design             | Typed `req.user`; separate `requireAuth` and `requireRole`.                                                                                               |
 
 All of these are covered in [`auth.test.ts`](apps/api/test/auth.test.ts).
 
 **Where the token lives:** in an `httpOnly`, `SameSite=Strict` cookie scoped to `/api`, served same-origin through the Vite proxy, so page JavaScript never sees it.
-That protects against XSS *stealing* the token, and SameSite=Strict plus JSON-only endpoints block cross-site request forgery.
-It does not protect against XSS *using* the session while the page is open, since injected script can still call the API as the user. Preventing XSS in the first place (React escaping, no `dangerouslySetInnerHTML`, CSP) still matters.
+That protects against XSS _stealing_ the token, and SameSite=Strict plus JSON-only endpoints block cross-site request forgery.
+It does not protect against XSS _using_ the session while the page is open, since injected script can still call the API as the user. Preventing XSS in the first place (React escaping, no `dangerouslySetInnerHTML`, CSP) still matters.
 
 ## Product question: "Delete all cancelled orders"
 
 > TODO: write this in your own words (five lines max). Points from our discussion:
-> ask *why* first (slow list? clutter? storage?); ask who relies on cancelled orders (finance refunds,
+> ask _why_ first (slow list? clutter? storage?); ask who relies on cancelled orders (finance refunds,
 > chargebacks, audit, legal retention); if she can't answer, propose hiding cancelled orders by default
 > (the status filter already exists) or an admin-only, logged archive instead of a hard delete.
 

@@ -23,7 +23,16 @@ type SortField = "date" | "amount";
 const orderFor = (sort: OrderSort, field: SortField) =>
   sort.startsWith(field) ? (sort.endsWith("asc") ? "ascend" : "descend") : null;
 
-export function OrdersTable({ rows, sort, onSortChange, loading, hasNextPage, isFetchingNextPage, onLoadMore, onDelete }: Props) {
+export function OrdersTable({
+  rows,
+  sort,
+  onSortChange,
+  loading,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
+  onDelete,
+}: Props) {
   const columns: TableProps<OrderDTO>["columns"] = [
     {
       title: "Order",
@@ -80,7 +89,13 @@ export function OrdersTable({ rows, sort, onSortChange, loading, hasNextPage, is
             okButtonProps={{ danger: true }}
             onConfirm={() => onDelete(o)}
           >
-            <Button size="small" danger type="text" icon={<DeleteOutlined />} aria-label={`Delete order #${o.orderNumber}`} />
+            <Button
+              size="small"
+              danger
+              type="text"
+              icon={<DeleteOutlined />}
+              aria-label={`Delete order #${o.orderNumber}`}
+            />
           </Popconfirm>
         </AdminOnly>
       ),
@@ -107,7 +122,11 @@ export function OrdersTable({ rows, sort, onSortChange, loading, hasNextPage, is
         }}
         onScroll={(e) => {
           const el = e.currentTarget;
-          if (hasNextPage && !isFetchingNextPage && el.scrollHeight - el.scrollTop - el.clientHeight < LOAD_MORE_THRESHOLD_PX) {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage &&
+            el.scrollHeight - el.scrollTop - el.clientHeight < LOAD_MORE_THRESHOLD_PX
+          ) {
             onLoadMore();
           }
         }}

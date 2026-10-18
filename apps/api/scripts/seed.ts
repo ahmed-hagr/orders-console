@@ -21,11 +21,81 @@ export const SEED_USERS = [
   { email: "agent@sarh.test", name: "Phone Agent", password: "Agent#2026", role: "agent" as const },
 ];
 
-const FIRST = ["Abdullah", "Noura", "Faisal", "Reem", "Omar", "Lama", "Khalid", "Sara", "Yousef", "Hessa", "Majed", "Dana", "Turki", "Maha", "Saad", "Jana", "Nasser", "Lulwa", "Ibrahim", "Ghada", "Fahad", "Amal", "Sultan", "Rania", "Bandar", "Hind", "Mishal", "Nouf", "Ziyad", "Shahad"];
-const LAST = ["Al-Harbi", "Al-Qahtani", "Al-Otaibi", "Al-Dosari", "Al-Shehri", "Al-Zahrani", "Al-Ghamdi", "Al-Mutairi", "Al-Subaie", "Al-Anazi", "Al-Shammari", "Al-Rashid", "Al-Juhani", "Al-Malki", "Al-Saud", "Al-Amri"];
+const FIRST = [
+  "Abdullah",
+  "Noura",
+  "Faisal",
+  "Reem",
+  "Omar",
+  "Lama",
+  "Khalid",
+  "Sara",
+  "Yousef",
+  "Hessa",
+  "Majed",
+  "Dana",
+  "Turki",
+  "Maha",
+  "Saad",
+  "Jana",
+  "Nasser",
+  "Lulwa",
+  "Ibrahim",
+  "Ghada",
+  "Fahad",
+  "Amal",
+  "Sultan",
+  "Rania",
+  "Bandar",
+  "Hind",
+  "Mishal",
+  "Nouf",
+  "Ziyad",
+  "Shahad",
+];
+const LAST = [
+  "Al-Harbi",
+  "Al-Qahtani",
+  "Al-Otaibi",
+  "Al-Dosari",
+  "Al-Shehri",
+  "Al-Zahrani",
+  "Al-Ghamdi",
+  "Al-Mutairi",
+  "Al-Subaie",
+  "Al-Anazi",
+  "Al-Shammari",
+  "Al-Rashid",
+  "Al-Juhani",
+  "Al-Malki",
+  "Al-Saud",
+  "Al-Amri",
+];
 const DOMAINS = ["gmail.com", "outlook.sa", "hotmail.com", "icloud.com", "yahoo.com"];
-const PRODUCTS = ["Desk lamp", "Office chair", "USB-C hub", "Notebook pack", "Water bottle", "Arabic coffee set", "Prayer mat", "Phone case", "Backpack", "Wireless mouse", "Dates gift box", "Oud perfume", "Kettle", "Bluetooth speaker", "Thobe"];
-const STATUS_WEIGHTS: [OrderStatus, number][] = [["pending", 0.15], ["paid", 0.2], ["shipped", 0.2], ["delivered", 0.35], ["cancelled", 0.1]];
+const PRODUCTS = [
+  "Desk lamp",
+  "Office chair",
+  "USB-C hub",
+  "Notebook pack",
+  "Water bottle",
+  "Arabic coffee set",
+  "Prayer mat",
+  "Phone case",
+  "Backpack",
+  "Wireless mouse",
+  "Dates gift box",
+  "Oud perfume",
+  "Kettle",
+  "Bluetooth speaker",
+  "Thobe",
+];
+const STATUS_WEIGHTS: [OrderStatus, number][] = [
+  ["pending", 0.15],
+  ["paid", 0.2],
+  ["shipped", 0.2],
+  ["delivered", 0.35],
+  ["cancelled", 0.1],
+];
 
 // Deterministic so every reviewer gets the same data.
 // mulberry32: 32-bit integer math via Math.imul, so it doesn't lose precision and cycle early.
@@ -93,7 +163,9 @@ async function main() {
   await setOrderCounter(TOTAL);
 
   const counts = await Order.aggregate<{ _id: string; n: number }>([{ $group: { _id: "$status", n: { $sum: 1 } } }]);
-  console.log(`\nBy status: ${ORDER_STATUSES.map((s) => `${s} ${counts.find((c) => c._id === s)?.n ?? 0}`).join(", ")}`);
+  console.log(
+    `\nBy status: ${ORDER_STATUSES.map((s) => `${s} ${counts.find((c) => c._id === s)?.n ?? 0}`).join(", ")}`,
+  );
   console.log(`Indexes: ${(await Order.listIndexes()).map((i) => JSON.stringify(i.key)).join(" ")}`);
   console.log(`Done in ${((Date.now() - started) / 1000).toFixed(1)} s`);
   await disconnectMongo();

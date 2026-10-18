@@ -18,7 +18,10 @@ interface CursorPayload {
   id: string;
 }
 
-export function encodeCursor(sort: OrderSort, row: { _id: Types.ObjectId; createdAt: Date; totalMinor: number }): string {
+export function encodeCursor(
+  sort: OrderSort,
+  row: { _id: Types.ObjectId; createdAt: Date; totalMinor: number },
+): string {
   const { field } = sortSpec(sort);
   const v = field === "createdAt" ? row.createdAt.toISOString() : row.totalMinor;
   const payload: CursorPayload = { s: sort, v, id: String(row._id) };

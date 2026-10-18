@@ -6,7 +6,10 @@ import { statusLabel } from "../../theme.ts";
 import type { OrderFilters as Filters } from "./useOrderFilters.ts";
 
 const ALL = "all";
-const statusOptions = [{ label: "All", value: ALL }, ...ORDER_STATUSES.map((s) => ({ label: statusLabel[s], value: s }))];
+const statusOptions = [
+  { label: "All", value: ALL },
+  ...ORDER_STATUSES.map((s) => ({ label: statusLabel[s], value: s })),
+];
 
 interface Props {
   filters: Filters;

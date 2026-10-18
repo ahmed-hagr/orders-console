@@ -27,7 +27,12 @@ export async function api<T>(path: string, { json, headers, ...init }: ApiInit =
 
   const body = (await res.json().catch(() => null)) as (ApiErrorBody & T) | null;
   if (!res.ok) {
-    throw new ApiError(res.status, body?.error ?? "http_error", body?.message ?? `Request failed (${res.status})`, body?.fields);
+    throw new ApiError(
+      res.status,
+      body?.error ?? "http_error",
+      body?.message ?? `Request failed (${res.status})`,
+      body?.fields,
+    );
   }
   return body as T;
 }

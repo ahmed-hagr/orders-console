@@ -29,7 +29,10 @@ const login = await fetch(`${base}/api/auth/login`, {
   body: JSON.stringify({ email: "agent@sarh.test", password: "Agent#2026" }),
 });
 if (!login.ok) throw new Error(`Login failed (${login.status}). Did you run npm run seed?`);
-const cookie = login.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
+const cookie = login.headers
+  .getSetCookie()
+  .map((c) => c.split(";")[0])
+  .join("; ");
 
 const key = randomUUID();
 const body = JSON.stringify({
@@ -47,12 +50,17 @@ const responses = await Promise.all(
       method: "POST",
       headers: { "content-type": "application/json", "Idempotency-Key": key, cookie },
       body,
-    }).then(async (r) => ({ status: r.status, body: (await r.json()) as { order?: { id: string; orderNumber: number }; replayed?: boolean } })),
+    }).then(async (r) => ({
+      status: r.status,
+      body: (await r.json()) as { order?: { id: string; orderNumber: number }; replayed?: boolean },
+    })),
   ),
 );
 
 responses.forEach((r, i) =>
-  console.log(`  request ${i + 1}: HTTP ${r.status}  order #${r.body.order?.orderNumber}  id ${r.body.order?.id}  replayed=${r.body.replayed}`),
+  console.log(
+    `  request ${i + 1}: HTTP ${r.status}  order #${r.body.order?.orderNumber}  id ${r.body.order?.id}  replayed=${r.body.replayed}`,
+  ),
 );
 
 const count = await Order.countDocuments({ idempotencyKey: key });

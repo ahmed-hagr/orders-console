@@ -10,7 +10,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <Layout className="min-h-screen">
       <Layout.Header className="flex items-center gap-4 border-b border-slate-200">
-        <div className="flex size-8 items-center justify-center rounded-md bg-brand font-mono text-sm text-white">OC</div>
+        <div className="flex size-8 items-center justify-center rounded-md bg-brand font-mono text-sm text-white">
+          OC
+        </div>
         <Typography.Text strong className="!text-base">
           Orders Console
         </Typography.Text>
