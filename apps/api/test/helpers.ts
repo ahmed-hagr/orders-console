@@ -27,13 +27,11 @@ export async function startTestApp() {
 export async function seedUsers() {
   await User.deleteMany({});
   const [admin, agent] = await Promise.all([
-    User.create({ ...pick(ADMIN), name: "Admin", role: "admin", passwordHash: await hashPassword(ADMIN.password) }),
-    User.create({ ...pick(AGENT), name: "Agent", role: "agent", passwordHash: await hashPassword(AGENT.password) }),
+    User.create({ email: ADMIN.email, name: "Admin", role: "admin", passwordHash: await hashPassword(ADMIN.password) }),
+    User.create({ email: AGENT.email, name: "Agent", role: "agent", passwordHash: await hashPassword(AGENT.password) }),
   ]);
   return { adminId: String(admin._id), agentId: String(agent._id) };
 }
-
-const pick = (u: { email: string }) => ({ email: u.email });
 
 export async function loginAs(app: ReturnType<typeof createApp>, user: { email: string; password: string }) {
   const agent = request.agent(app);

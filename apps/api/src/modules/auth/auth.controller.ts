@@ -1,16 +1,16 @@
 import type { CookieOptions, Request, Response } from "express";
 import { LoginInput } from "@oc/shared";
-import ms from "./ttl.ts";
 import { env, isProd } from "../../config/env.ts";
 import { SESSION_COOKIE } from "../../middleware/requireAuth.ts";
 import * as auth from "./auth.service.ts";
+import { parseTtlMs } from "./parseTtl.ts";
 
 const cookieOptions = (): CookieOptions => ({
   httpOnly: true,
   sameSite: "strict",
   secure: isProd,
   path: "/api",
-  maxAge: ms(env.JWT_TTL),
+  maxAge: parseTtlMs(env.JWT_TTL),
 });
 
 export async function login(req: Request, res: Response) {

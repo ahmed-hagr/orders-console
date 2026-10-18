@@ -9,7 +9,10 @@ const Env = z.object({
   MONGO_URI: z.string().min(1, "MONGO_URI is required"),
   // No default on purpose: the contractor's hard-coded secret is exactly what we're removing.
   JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
-  JWT_TTL: z.string().default("8h"),
+  JWT_TTL: z
+    .string()
+    .regex(/^\d+[smhd]$/, "JWT_TTL must look like 30m, 8h or 1d")
+    .default("8h"),
   PORT: z.coerce.number().int().default(4000),
   STATS_DELAY_MIN_MS: z.coerce.number().int().min(0).default(3000),
   STATS_DELAY_MAX_MS: z.coerce.number().int().min(0).default(6000),

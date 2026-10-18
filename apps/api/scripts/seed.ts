@@ -16,7 +16,7 @@ const TOTAL = Number(process.env.SEED_ORDERS ?? 50_000);
 const BATCH = 5_000;
 const DAYS = 90;
 
-export const SEED_USERS = [
+const SEED_USERS = [
   { email: "admin@sarh.test", name: "Operations Admin", password: "Admin#2026", role: "admin" as const },
   { email: "agent@sarh.test", name: "Phone Agent", password: "Agent#2026", role: "agent" as const },
 ];
