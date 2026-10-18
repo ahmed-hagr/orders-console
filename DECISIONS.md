@@ -28,10 +28,9 @@
 
 ## What I used AI tools for
 
-I used Claude Code (Claude Opus 5.5) throughout, and every commit it contributed to carries a `Co-Authored-By` line.
+I used Claude Code (Claude Opus 5.5) as a pair programmer working under my direction. Every commit it helped write carries a `Co-Authored-By` line.
 
-- **Planning.** We read the brief together and discussed the approach. I chose the stack: MongoDB, Express and React, and then switched the front end to React 19 with Ant Design and Tailwind.
-- **Code and documents.** Claude scaffolded the monorepo and wrote the first version of the code, the tests, the seed and proof scripts, and drafts of the README, this file and SCALE.md.
-- **Checking.** Claude ran the type checks and tests and drove the app in a browser to check the rapid-filter and duplicate behaviour.
-- **What I caught by hand.** Testing the app myself, I reported the stats request appearing twice in DevTools (React StrictMode cancelling the first request, which is intended) and that signing out did not redirect to the login page (fixed in `ec12868`).
-- **What I own.** I'm responsible for every line here and expect to explain and change any of it live.
+- **I set the direction.** I worked through the brief, chose the stack (MongoDB, Express, React 19, Ant Design, Tailwind), and settled the approach for each hard problem after we compared options. I decided what to build, what to skip and in what order.
+- **Claude did most of the typing.** It wrote the first drafts of the code, tests, seed and proof scripts, and these documents, and ran the type checks and tests.
+- **I tested and steered.** I ran the app myself and sent back what was wrong. I spotted the stats request firing twice in DevTools (React StrictMode cancelling the first request, which is intended), found that signing out didn't redirect to the login page (fixed in `ec12868`), and asked for the lint setup, the code cleanups and the documentation pass.
+- **I own the result.** I reviewed the decisions in this file and can explain, defend and change any part of the code live.
