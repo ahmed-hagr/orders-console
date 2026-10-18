@@ -1,0 +1,14 @@
+/* antd sits above Tailwind's reset (base) and below utilities, so neither breaks the other. */
+@layer theme, base, antd, components, utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-brand: #0e5e54;
+  --color-canvas: #eef2f0;
+}
+
+body {
+  background: var(--color-canvas);
+}
