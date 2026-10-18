@@ -1,3 +1,4 @@
+import type { Server } from "node:http";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import request from "supertest";
@@ -14,10 +15,12 @@ export const AGENT = { email: "agent@sarh.test", password: "Agent#2026" };
 export async function startTestApp() {
   const mongo = await MongoMemoryServer.create();
   await connectMongo(mongo.getUri());
-  const app = createApp();
+  // A real listening server: supertest otherwise attaches listeners to a fresh one per request.
+  const app: Server = createApp().listen(0);
   return {
     app,
     async stop() {
+      await new Promise((resolve) => app.close(resolve));
       await mongoose.disconnect();
       await mongo.stop();
     },
@@ -33,7 +36,7 @@ export async function seedUsers() {
   return { adminId: String(admin._id), agentId: String(agent._id) };
 }
 
-export async function loginAs(app: ReturnType<typeof createApp>, user: { email: string; password: string }) {
+export async function loginAs(app: Server, user: { email: string; password: string }) {
   const agent = request.agent(app);
   await agent.post("/api/auth/login").send(user).expect(200);
   return agent;

@@ -14,7 +14,7 @@
     "seed": "npm -w @oc/api run seed",
     "prove:idempotency": "npm -w @oc/api run prove:idempotency",
     "test": "npm -w @oc/api test",
-    "typecheck": "npm -ws --if-present run typecheck",
+    "typecheck": "npm --workspaces --if-present run typecheck",
     "build": "npm -w @oc/web run build",
     "db:up": "docker compose up -d mongo",
     "lint": "eslint .",
