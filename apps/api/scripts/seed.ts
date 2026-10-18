@@ -28,8 +28,14 @@ const PRODUCTS = ["Desk lamp", "Office chair", "USB-C hub", "Notebook pack", "Wa
 const STATUS_WEIGHTS: [OrderStatus, number][] = [["pending", 0.15], ["paid", 0.2], ["shipped", 0.2], ["delivered", 0.35], ["cancelled", 0.1]];
 
 // Deterministic so every reviewer gets the same data.
+// mulberry32: 32-bit integer math via Math.imul, so it doesn't lose precision and cycle early.
 let seed = 20261018;
-const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648), seed / 2147483648);
+const rnd = () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
 const pick = <T>(xs: readonly T[]): T => xs[Math.floor(rnd() * xs.length)]!;
 const pickStatus = (): OrderStatus => {
   let r = rnd();

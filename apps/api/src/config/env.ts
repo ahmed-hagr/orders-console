@@ -13,6 +13,8 @@ const Env = z.object({
   PORT: z.coerce.number().int().default(4000),
   STATS_DELAY_MIN_MS: z.coerce.number().int().min(0).default(3000),
   STATS_DELAY_MAX_MS: z.coerce.number().int().min(0).default(6000),
+  /** 0..1. Share of stats calls that fail with 503, to show the error state. Keep 0 outside demos. */
+  STATS_FAIL_RATE: z.coerce.number().min(0).max(1).default(0),
   LOGIN_RATE_LIMIT: z.coerce.number().int().min(1).default(10),
 });
 

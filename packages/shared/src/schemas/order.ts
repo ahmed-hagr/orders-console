@@ -13,23 +13,27 @@ export const MAX_ITEMS = 5;
 const hasAtMostTwoDecimals = (n: number) => Math.abs(Math.round(n * 100) - n * 100) < 1e-6;
 
 export const LineItemInput = z.object({
-  name: z.string().trim().min(1, "Enter the item name").max(80),
+  name: z.string({ error: "Enter the item name" }).trim().min(1, "Enter the item name").max(80),
   quantity: z.coerce
-    .number()
+    .number({ error: "Enter a quantity" })
     .int("Quantity must be a whole number")
     .min(1, "Quantity must be at least 1")
     .max(99, "Quantity must be 99 or less"),
   unitPrice: z.coerce
-    .number()
+    .number({ error: "Enter a price" })
     .positive("Price must be above 0")
     .max(100_000, "Price must be 100,000 or less")
     .refine(hasAtMostTwoDecimals, "Use at most two decimals"),
 });
 export type LineItemInput = z.infer<typeof LineItemInput>;
 
-export const CustomerName = z.string().trim().min(2, "Enter at least 2 characters").max(120);
+export const CustomerName = z
+  .string({ error: "Enter the customer name" })
+  .trim()
+  .min(2, "Enter at least 2 characters")
+  .max(120);
 export const Email = z
-  .string()
+  .string({ error: "Enter the customer email" })
   .trim()
   .toLowerCase()
   .pipe(z.email("Enter a valid email, like name@example.com"));

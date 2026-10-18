@@ -42,6 +42,9 @@ export async function stats(req: Request, res: Response) {
     });
   });
   if (clientGone) return;
+  if (Math.random() < env.STATS_FAIL_RATE) {
+    throw new HttpError(503, "stats_unavailable", "Stats are temporarily unavailable. Try again in a moment");
+  }
 
   res.json(await orders.getStats());
 }
