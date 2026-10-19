@@ -36,5 +36,3 @@ export async function api<T>(path: string, { json, headers, ...init }: ApiInit =
   }
   return body as T;
 }
-
-export const isAbort = (err: unknown) => err instanceof DOMException && err.name === "AbortError";
