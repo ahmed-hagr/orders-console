@@ -7,7 +7,7 @@
     "apps/*"
   ],
   "engines": {
-    "node": ">=20.12"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
     "dev": "concurrently -n api,web -c cyan,magenta \"npm -w @oc/api run dev\" \"npm -w @oc/web run dev\"",

@@ -11,7 +11,7 @@ packages/shared Zod schemas and types used by both, so client and server validat
 
 ## Run it
 
-You need **Node 20.12+** (22 recommended) and **MongoDB 7** listening on `localhost:27017`, either installed locally or via `npm run db:up` (Docker).
+You need **Node 20.19+ or 22.12+** (22 recommended; Vite 7 requires it) and **MongoDB 7** listening on `localhost:27017`, either installed locally or via `npm run db:up` (Docker).
 
 ```bash
 npm install
