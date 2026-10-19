@@ -54,10 +54,12 @@ Generate a secret with `node -e "console.log(require('crypto').randomBytes(32).t
 
 | Command                     | What it does                                                            |
 | --------------------------- | ----------------------------------------------------------------------- |
-| `npm test`                  | 29 API tests against a real, temporary mongod (downloaded on first run) |
+| `npm test`                  | 31 API tests against a real, temporary mongod (downloaded on first run) |
 | `npm run check`             | Typecheck + lint + format check + API tests, all workspaces             |
 | `npm run prove:idempotency` | R2 proof against your seeded database                                   |
 | `npm run test:e2e`          | R1 browser test (Playwright, uses your installed Chrome)                |
+
+**Environment note:** in some macOS/sandboxed environments, `mongodb-memory-server` can fail to bind a temporary mongod. The test helper falls back to a local MongoDB URI with an isolated random test database, then drops that database on teardown.
 
 ### R2 proof: the same request twice in parallel
 
@@ -153,6 +155,7 @@ In an **httpOnly, SameSite=Strict cookie** scoped to `/api`, served same-origin 
 | Idempotency key expiry | Keys stay on the order forever. Cheap at this size, but a key can never be reused.                                                                                                                           |
 | More front-end tests   | The browser suite covers the R1 race only. Create, delete and stats states are covered by API tests and checked by hand.                                                                                     |
 | CSRF token             | Relying on SameSite=Strict + same-origin + JSON-only bodies. A cross-origin deployment would need one.                                                                                                       |
+| Inventory reservation  | Out of scope for this version: order item quantities are validated, but no product-stock reservation/decrement flow is implemented yet.                                                                       |
 | Smaller bundle         | About 420 kB gzipped, mostly antd. Route-level code splitting would fix it but adds nothing to this review.                                                                                                  |
 | Gap-free order numbers | The create path re-checks idempotency right before reserving an order number, which reduces avoidable gaps on late retries. Under truly parallel duplicate submissions, small gaps can still occur.           |
 | Screen recording       | Screenshots below instead.                                                                                                                                                                                   |
