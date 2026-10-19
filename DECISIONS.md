@@ -40,9 +40,9 @@ Three decisions, each with the alternative I seriously considered and why I reje
 
 ## What I used AI tools for
 
-I used Claude Code (Claude Opus 5.5) as a pair programmer working under my direction. 
+I used Claude Code (Claude Opus 5.5) as a pair programmer working under my direction.
 
 - **I set the direction.** I worked through the brief, chose the stack (MongoDB, Express, React 19, Ant Design, Tailwind), and settled the approach for each hard problem after we compared options. I decided what to build, what to skip and in what order.
 - **Claude did most of the typing.** It wrote the first drafts of the code, tests, seed and proof scripts, and these documents, and ran the type checks and tests.
-- **I tested and steered.** I ran the app myself and sent back what was wrong. I spotted the stats request firing twice in DevTools (React StrictMode cancelling the first request, which is intended), found that signing out didn't redirect to the login page (fixed in `ec12868`), and asked for the lint setup, the code cleanups and the documentation pass.
+- **I tested and steered.** I ran the app myself and sent back what was wrong. I spotted the stats request firing twice in DevTools (React StrictMode cancelling the first request, which is intended), found that signing out didn't redirect to the login page (since fixed), and asked for the lint setup, the code cleanups and the documentation pass.
 - **I own the result.** I reviewed the decisions in this file and can explain, defend and change any part of the code live.
