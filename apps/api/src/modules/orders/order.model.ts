@@ -30,14 +30,16 @@ const OrderSchema = new Schema(
   { timestamps: true },
 );
 
-// R1: one index per (filter, sort) shape. _id is the tie-breaker the keyset cursor needs.
-OrderSchema.index({ createdAt: -1, _id: -1 });
-OrderSchema.index({ totalMinor: -1, _id: -1 });
-OrderSchema.index({ status: 1, createdAt: -1, _id: -1 });
-OrderSchema.index({ status: 1, totalMinor: -1, _id: -1 });
-// Anchored prefix regexes (/^term/) on these use index bounds instead of a collection scan.
-OrderSchema.index({ email: 1 });
-OrderSchema.index({ nameTokens: 1 });
+const ACTIVE_ONLY = { partialFilterExpression: { deletedAt: null } } as const;
+
+// R1 list indexes for active orders only. _id is the keyset tie-breaker.
+OrderSchema.index({ createdAt: -1, _id: -1 }, ACTIVE_ONLY);
+OrderSchema.index({ totalMinor: -1, _id: -1 }, ACTIVE_ONLY);
+OrderSchema.index({ status: 1, createdAt: -1, _id: -1 }, ACTIVE_ONLY);
+OrderSchema.index({ status: 1, totalMinor: -1, _id: -1 }, ACTIVE_ONLY);
+// Anchored prefix regexes (/^term/) use index bounds; partial keeps index size focused on list paths.
+OrderSchema.index({ email: 1 }, ACTIVE_ONLY);
+OrderSchema.index({ nameTokens: 1 }, ACTIVE_ONLY);
 
 OrderSchema.index({ orderNumber: 1 }, { unique: true });
 

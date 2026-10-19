@@ -36,7 +36,9 @@ beforeAll(async () => {
   );
   await Order.syncIndexes();
 });
-afterAll(() => ctx.stop());
+afterAll(async () => {
+  await ctx?.stop();
+});
 
 async function walk(query: Record<string, string>): Promise<OrderDTO[]> {
   const all: OrderDTO[] = [];
@@ -110,6 +112,27 @@ describe("GET /api/orders keyset pagination", () => {
     expect(plan).toContain("IXSCAN");
     expect(plan).toContain("status_1_createdAt_-1__id_-1");
     expect(plan).not.toMatch(/"stage":"SORT"/);
+  });
+
+  it("uses an index for status + amount sort with no in-memory SORT stage", async () => {
+    const explained = (await Order.find({ deletedAt: null, status: "paid" })
+      .sort({ totalMinor: -1, _id: -1 })
+      .limit(51)
+      .explain("queryPlanner")) as unknown as { queryPlanner: { winningPlan: unknown } };
+    const plan = JSON.stringify(explained.queryPlanner.winningPlan);
+    expect(plan).toContain("IXSCAN");
+    expect(plan).toContain("status_1_totalMinor_-1__id_-1");
+    expect(plan).not.toMatch(/"stage":"SORT"/);
+  });
+
+  it("uses an index for search + sort (no COLLSCAN)", async () => {
+    const explained = (await Order.find({ deletedAt: null, $or: [{ nameTokens: /^noura/ }, { email: /^noura/ }] })
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(51)
+      .explain("queryPlanner")) as unknown as { queryPlanner: { winningPlan: unknown } };
+    const plan = JSON.stringify(explained.queryPlanner.winningPlan);
+    expect(plan).toContain("IXSCAN");
+    expect(plan).not.toContain("COLLSCAN");
   });
 });
 

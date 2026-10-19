@@ -74,6 +74,10 @@ export async function createOrder(input: CreateOrderParsed, userIdStr: string, k
   const items = input.items.map((i) => ({ name: i.name, quantity: i.quantity, unitPriceMinor: toMinor(i.unitPrice) }));
   const totalMinor = items.reduce((sum, i) => sum + i.quantity * i.unitPriceMinor, 0);
 
+  // Re-check right before reserving an order number to reduce avoidable gaps on near-simultaneous retries.
+  const justCreated = await replay(userId, key, bodyHash);
+  if (justCreated) return justCreated;
+
   try {
     const doc = await Order.create({
       orderNumber: await nextOrderNumber(),
@@ -136,4 +140,30 @@ export async function getStats(): Promise<OrderStats> {
   const byStatus = Object.fromEntries(ORDER_STATUSES.map((s) => [s, 0])) as OrderStats["byStatus"];
   for (const row of result?.byStatus ?? []) byStatus[row._id as keyof typeof byStatus] = row.n;
   return { byStatus, revenueTodayMinor: result?.today[0]?.total ?? 0, since: since.toISOString() };
+}
+
+const sleep = (ms: number, signal?: AbortSignal): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const t = setTimeout(resolve, ms);
+    if (!signal) return;
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(t);
+        reject(new HttpError(499, "request_aborted", "Client disconnected"));
+      },
+      { once: true },
+    );
+  });
+
+export async function getStatsWithDelay(
+  opts: { minMs: number; maxMs: number; failRate: number },
+  signal?: AbortSignal,
+): Promise<OrderStats> {
+  const delay = opts.minMs + Math.random() * Math.max(0, opts.maxMs - opts.minMs);
+  await sleep(delay, signal);
+  if (Math.random() < opts.failRate) {
+    throw new HttpError(503, "stats_unavailable", "Stats are temporarily unavailable. Try again in a moment");
+  }
+  return getStats();
 }

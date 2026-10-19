@@ -27,24 +27,13 @@ export async function remove(req: Request<{ id: string }>, res: Response) {
 
 /** O1: deliberately slow. Stops early, without querying, if the client goes away. */
 export async function stats(req: Request, res: Response) {
-  let clientGone = false;
+  const abort = new AbortController();
   res.on("close", () => {
-    if (!res.writableFinished) clientGone = true;
+    if (!res.writableFinished) abort.abort();
   });
-
-  const { STATS_DELAY_MIN_MS: min, STATS_DELAY_MAX_MS: max } = env;
-  const delay = min + Math.random() * Math.max(0, max - min);
-  await new Promise<void>((resolve) => {
-    const t = setTimeout(resolve, delay);
-    res.on("close", () => {
-      clearTimeout(t);
-      resolve();
-    });
-  });
-  if (clientGone) return;
-  if (Math.random() < env.STATS_FAIL_RATE) {
-    throw new HttpError(503, "stats_unavailable", "Stats are temporarily unavailable. Try again in a moment");
-  }
-
-  res.json(await orders.getStats());
+  const stats = await orders.getStatsWithDelay(
+    { minMs: env.STATS_DELAY_MIN_MS, maxMs: env.STATS_DELAY_MAX_MS, failRate: env.STATS_FAIL_RATE },
+    abort.signal,
+  );
+  res.json(stats);
 }

@@ -21,7 +21,9 @@ beforeAll(async () => {
   await seedUsers();
   agent = await loginAs(ctx.app, AGENT);
 });
-afterAll(() => ctx.stop());
+afterAll(async () => {
+  await ctx?.stop();
+});
 beforeEach(() => Order.deleteMany({}));
 
 const post = (key: string | undefined, payload: object = body, as = agent) => {

@@ -12,7 +12,9 @@ beforeAll(async () => {
   ctx = await startTestApp();
   ids = await seedUsers();
 });
-afterAll(() => ctx.stop());
+afterAll(async () => {
+  await ctx?.stop();
+});
 
 const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
 const withCookie = (token: string) => request(ctx.app).get("/api/orders").set("Cookie", `oc_session=${token}`);

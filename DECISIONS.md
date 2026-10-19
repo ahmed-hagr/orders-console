@@ -20,7 +20,7 @@ Three decisions, each with the alternative I seriously considered and why I reje
 
 ## 2. Pagination: keyset cursor instead of skip/limit
 
-**Decision.** The cursor is the last row's `(sort value, _id)`, and the next page is "strictly after" it. One compound index per filter/sort shape (`{status, createdAt, _id}` and so on) lets MongoDB walk the index with no SORT stage. I fetch `limit + 1` rows to know whether another page exists, and send no total count.
+**Decision.** The cursor is the last row's `(sort value, _id)`, and the next page is "strictly after" it. The API uses partial indexes scoped to active orders (`deletedAt: null`) for each filter/sort shape (`{status, createdAt, _id}` and so on), plus prefix-search indexes for `email` and `nameTokens`. This keeps list-serving indexes focused and lets MongoDB walk the right index for keyset pagination with no SORT stage on the status+sort paths. I fetch `limit + 1` rows to know whether another page exists, and send no total count.
 
 **Alternative.** `skip`/`limit` with numbered pages and a `countDocuments` total. It's simpler, and agents know page numbers from spreadsheets.
 

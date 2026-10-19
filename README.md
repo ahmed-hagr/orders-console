@@ -95,7 +95,7 @@ The test can fail: against a naive `useEffect` fetch with no abort and no "lates
 ### R1: a fast list that never shows stale results
 
 - **Keyset pagination** on `(sort field, _id)`: no `skip`, and no `countDocuments` per request. Pages are fetched as `limit + 1` to know whether another page exists.
-- **One compound index per filter/sort shape**, declared in [`order.model.ts`](apps/api/src/modules/orders/order.model.ts): `{createdAt,_id}`, `{totalMinor,_id}`, `{status,createdAt,_id}`, `{status,totalMinor,_id}`.
+- **Targeted active-order indexes**, declared in [`order.model.ts`](apps/api/src/modules/orders/order.model.ts): partial indexes on `{createdAt,_id}`, `{totalMinor,_id}`, `{status,createdAt,_id}`, `{status,totalMinor,_id}`, plus prefix-search indexes on `email` and `nameTokens`, all scoped to `deletedAt: null`.
 - **Prefix search** (`/^term/`) on `email` and `nameTokens` uses index bounds. The trade-off: "oura" does not find "Noura".
 - **Virtual table:** the browser renders only visible rows and loads the next cursor page on scroll.
 - **No stale results:** each filter combination is its own TanStack Query cache entry. A response can only land in the entry it was requested for, and the table always shows the entry for the current filters. The old request is also aborted, but that only saves work; correctness comes from the key. See [`useOrdersQuery.ts`](apps/web/src/features/orders/useOrdersQuery.ts).
@@ -154,7 +154,7 @@ In an **httpOnly, SameSite=Strict cookie** scoped to `/api`, served same-origin 
 | More front-end tests   | The browser suite covers the R1 race only. Create, delete and stats states are covered by API tests and checked by hand.                                                                                     |
 | CSRF token             | Relying on SameSite=Strict + same-origin + JSON-only bodies. A cross-origin deployment would need one.                                                                                                       |
 | Smaller bundle         | About 420 kB gzipped, mostly antd. Route-level code splitting would fix it but adds nothing to this review.                                                                                                  |
-| Gap-free order numbers | Two copies of the same request both reserve a number before the unique index picks a winner, so the loser's number is never used (e.g. #50003). Numbers stay unique and increasing.                          |
+| Gap-free order numbers | The create path re-checks idempotency right before reserving an order number, which reduces avoidable gaps on late retries. Under truly parallel duplicate submissions, small gaps can still occur.           |
 | Screen recording       | Screenshots below instead.                                                                                                                                                                                   |
 
 ## Screenshots
