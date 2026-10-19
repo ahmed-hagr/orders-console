@@ -145,17 +145,17 @@ In an **httpOnly, SameSite=Strict cookie** scoped to `/api`, served same-origin 
 
 ## What I skipped and why
 
-| Skipped                | Why                                                                                                                                                                                 |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| O2, optimistic create  | The brief says pick at most one; O1 (slow stats) reuses the abort handling from R1.                                                                                                 |
-| Total match count      | `countDocuments` on every filter change is the slowest part of a list at scale; the UI shows "N loaded, scroll for more" instead.                                                   |
-| Substring search       | Prefix-only search stays on an index. Substring search needs a text or Atlas Search index (see [SCALE.md](SCALE.md)).                                                               |
-| Idempotency key expiry | Keys stay on the order forever. Cheap at this size, but a key can never be reused.                                                                                                  |
-| More front-end tests   | The browser suite covers the R1 race only. Create, delete and stats states are covered by API tests and checked by hand.                                                            |
-| CSRF token             | Relying on SameSite=Strict + same-origin + JSON-only bodies. A cross-origin deployment would need one.                                                                              |
-| Smaller bundle         | About 420 kB gzipped, mostly antd. Route-level code splitting would fix it but adds nothing to this review.                                                                         |
-| Gap-free order numbers | Two copies of the same request both reserve a number before the unique index picks a winner, so the loser's number is never used (e.g. #50003). Numbers stay unique and increasing. |
-| Screen recording       | Screenshots below instead.                                                                                                                                                          |
+| Skipped                | Why                                                                                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| O2, optimistic create  | The brief allows only one optional task. I chose O1 (slow stats) because it reuses the request cancellation already built for R1; O2 would need new rollback logic that interacts with duplicate prevention. |
+| Total match count      | `countDocuments` on every filter change is the slowest part of a list at scale; the UI shows "N loaded, scroll for more" instead.                                                                            |
+| Substring search       | Prefix-only search stays on an index. Substring search needs a text or Atlas Search index (see [SCALE.md](SCALE.md)).                                                                                        |
+| Idempotency key expiry | Keys stay on the order forever. Cheap at this size, but a key can never be reused.                                                                                                                           |
+| More front-end tests   | The browser suite covers the R1 race only. Create, delete and stats states are covered by API tests and checked by hand.                                                                                     |
+| CSRF token             | Relying on SameSite=Strict + same-origin + JSON-only bodies. A cross-origin deployment would need one.                                                                                                       |
+| Smaller bundle         | About 420 kB gzipped, mostly antd. Route-level code splitting would fix it but adds nothing to this review.                                                                                                  |
+| Gap-free order numbers | Two copies of the same request both reserve a number before the unique index picks a winner, so the loser's number is never used (e.g. #50003). Numbers stay unique and increasing.                          |
+| Screen recording       | Screenshots below instead.                                                                                                                                                                                   |
 
 ## Screenshots
 
