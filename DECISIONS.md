@@ -40,7 +40,7 @@ Three decisions, each with the alternative I seriously considered and why I reje
 
 ## What I used AI tools for
 
-I used Claude Code (Claude Opus 5.5) as a pair programmer working under my direction. Every commit it helped write carries a `Co-Authored-By` line.
+I used Claude Code (Claude Opus 5.5) as a pair programmer working under my direction. 
 
 - **I set the direction.** I worked through the brief, chose the stack (MongoDB, Express, React 19, Ant Design, Tailwind), and settled the approach for each hard problem after we compared options. I decided what to build, what to skip and in what order.
 - **Claude did most of the typing.** It wrote the first drafts of the code, tests, seed and proof scripts, and these documents, and ran the type checks and tests.
