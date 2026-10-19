@@ -67,6 +67,7 @@ I also checked that the test can fail: against a naive `useEffect` fetch with no
 `npm run test:e2e` needs MongoDB running and seeded. It starts the API and web app if they aren't already running.
 It uses your installed Google Chrome; to use Playwright's own browser instead, run `npx playwright install chromium` and set `PW_CHANNEL=chromium`.
 
+The stats endpoint waits a random time between `STATS_DELAY_MIN_MS` and `STATS_DELAY_MAX_MS` (3–6 s by default, as O1 asks).
 To see the stats error state by hand, set `STATS_FAIL_RATE=1` in `apps/api/.env` and restart the API.
 
 ## How the two hard problems are solved
